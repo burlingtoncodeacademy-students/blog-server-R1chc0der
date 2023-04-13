@@ -7,6 +7,6 @@ const PORT = 4029;
 app.listen(PORT, () => {
   console.log(`Running on port: ${PORT}`);
 });
-
+app.use(express.json({ extended: false }));
 const routes = require("./controllers/routes");
 app.use("/", routes);

@@ -1,7 +1,8 @@
 const router = require("express").Router();
-const db = require("../api/blog.json");
+const fsPath = "../api/blog.json";
+const db = require(fsPath);
 const fs = require("fs");
-const fsPath = "./api/blog.json";
+const path = require("path");
 
 //  Endpoint that will display all comments from the database. In lieu of database, we use our blog.json file.
 router.get("/", (req, res) => {
@@ -43,56 +44,62 @@ router.get("/helloid/:id", (req, res) => {
 // POST One - Create, http://localhost:4029/newpostId
 router.post("/newpostid", (req, res) => {
   try {
+    // template from blog.json for object destructure
+    /*
+let title = req.body.title;
+let author = req.body.author;
+let body = req.body.body;
+*/
     let { title, author, body } = req.body;
 
-    // Use math to create an id for the new character
-    let newId = db.length + 1;
+    const fullPath = path.join(__dirname, fsPath);
 
-    // Declare and assign newChar object
-    const newPersonId = {
-      post_id: title,
-      author,
-      body,
-    };
-
-    fs.readFile(fsPath, (err, data) => {
+    fs.readFile(fullPath, (err, data) => {
       if (err) throw err;
 
       const database = JSON.parse(data);
+      // Use math to create an id for the new post
+      let newId = database.length + 1;
 
       // create a way to make sure nothing has the same ID
-      console.log(
+      /* console.log(
         "ID values: ",
         database.filter((d) => {
           if (d) {
             return d.id;
           }
         })
-      );
+      ); */
 
       let currentIDs = [];
 
       database.forEach((obj) => {
         currentIDs.push(obj.id);
       });
+      // Declare and assign new post object
+      const newPost = {
+        post_id: newId,
+        title,
+        author,
+        body,
+      };
+
       if (currentIDs.includes(newId)) {
         let maxValue = Math.max(...currentIDs);
         newId = maxValue + 1;
-        newCharacter.id = newId;
+        newPost.id = newId;
       }
-      database.push(newCharacter);
+      database.push(newPost);
 
-      fs.writeFile(fsPath, JSON.stringify(database), (err) => {
+      fs.writeFile(fullPath, JSON.stringify(database), (err) => {
         console.log(err);
       });
 
       res.status(200).json({
-        status: `Created new character ${newCharacter.name}!`,
-        newCharacter,
+        status: `Created new Post ${newPost.title}!`,
+        newPost,
       });
     });
-
-    console.log(req.body);
   } catch (err) {
     res.status(500).json({
       error: err.message,
