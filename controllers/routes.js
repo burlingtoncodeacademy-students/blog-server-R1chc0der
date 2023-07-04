@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 //  Endpoint that will display all comments from the database. In lieu of database, we use our blog.json file.
-
+// localhost:4029/ to get all
 router.get("/", (req, res) => {
   try {
     res.status(200).json({
@@ -34,7 +34,17 @@ router.get("/:id", (req, res) => {
   }
 });
 
-// Creating the delete endpoint
+// // Creating the delete endpoint
+// router.delete("/delete", (req, res) => {
+//   try {
+//     const
+
+//   } catch (err) {
+//     res.status(500).json({
+//       error: err.message,
+//     });
+//   }
+// });
 
 // POST One - Create, http://localhost:4029/newpostId
 router.post("/newpostid", (req, res) => {
@@ -90,9 +100,9 @@ router.post("/newpostid", (req, res) => {
 router.put("/:id", (req, res) => {
   try {
     const id = Number(req.params.id);
-
+    const fullPath = path.join(__dirname, fsPath);
     const updatedInfo = req.body;
-    fs.readFile(fsPath, (err, data) => {
+    fs.readFile(fullPath, (err, data) => {
       if (err) throw err;
 
       const database = JSON.parse(data);
@@ -100,7 +110,7 @@ router.put("/:id", (req, res) => {
       let theId;
 
       database.forEach((obj, i) => {
-        if (obj.id === id) {
+        if (obj.post_id === id) {
           let buildObj = {};
 
           for (key in obj) {
@@ -120,7 +130,9 @@ router.put("/:id", (req, res) => {
       if (Object.keys(theId).length <= 0)
         res.status(404).json({ message: "No character in roster" });
 
-      fs.writeFile(fsPath, JSON.stringify(database), (err) => console.log(err));
+      fs.writeFile(fullPath, JSON.stringify(database), (err) =>
+        console.log(err)
+      );
 
       res.status(200).json({
         status: `Modified character at ID: ${id}.`,
