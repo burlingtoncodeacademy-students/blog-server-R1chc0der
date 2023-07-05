@@ -3,8 +3,9 @@ const router = require("express").Router();
 const fsPath = "../api/blog.json";
 // throwing the blog.json into a variable call db for internal usage
 const db = require(fsPath);
-// used for writing to json file
+// used for writing to json file via node
 const fs = require("fs");
+// used to route path to files
 const path = require("path");
 // used to write to the database(json object "db") __dirname is keyword
 const fullPath = path.join(__dirname, fsPath);
@@ -14,9 +15,11 @@ const fullPath = path.join(__dirname, fsPath);
 router.get("/", (req, res) => {
   try {
     res.status(200).json({
+      // getting db(blog.json)
       results: db,
     });
   } catch (err) {
+    // error if try not accomplished
     res.status(500).json({
       error: err.message,
     });
@@ -33,6 +36,7 @@ router.get("/:id", (req, res) => {
       commentId,
     });
   } catch (err) {
+    // error if try not accomplished
     res.status(500).json({
       error: err.message,
     });
@@ -70,6 +74,7 @@ router.delete("/:id", async (req, res) => {
 
     res.status(200).json({});
   } catch (err) {
+    // error if try not accomplished
     errorResponse(res, err);
   }
 });
@@ -77,10 +82,11 @@ router.delete("/:id", async (req, res) => {
 // POST One - Create, http://localhost:4029/newpostId
 router.post("/newpostid", (req, res) => {
   try {
+    // parameters used to create object {......}
     let { title, author, body } = req.body;
-
+    // used to join and write back to database
     const fullPath = path.join(__dirname, fsPath);
-
+    // reading blog.json
     fs.readFile(fullPath, (err, data) => {
       if (err) throw err;
 
@@ -93,7 +99,7 @@ router.post("/newpostid", (req, res) => {
       database.forEach((obj) => {
         currentIDs.push(obj.id);
       });
-      // Declare and assign new post object
+      // Declare and assign new post object keys use in the object
       const newPost = {
         post_id: newId,
         title,
@@ -102,10 +108,12 @@ router.post("/newpostid", (req, res) => {
       };
 
       if (currentIDs.includes(newId)) {
+        // using spread operator
         let maxValue = Math.max(...currentIDs);
         newId = maxValue + 1;
         newPost.id = newId;
       }
+      // creating at the end of the array of objects
       database.push(newPost);
 
       fs.writeFile(fullPath, JSON.stringify(database), (err) => {
@@ -118,17 +126,20 @@ router.post("/newpostid", (req, res) => {
       });
     });
   } catch (err) {
+    // error if try not accomplished
     res.status(500).json({
       error: err.message,
     });
   }
 });
 
-//  One by ID - Update
+//  Updating the blog.json - Update
 router.put("/:id", (req, res) => {
   try {
+    // assigning request id into a number making it a number
     const id = Number(req.params.id);
     const fullPath = path.join(__dirname, fsPath);
+    // used for updated the blog.json object body
     const updatedInfo = req.body;
     fs.readFile(fullPath, (err, data) => {
       if (err) throw err;
@@ -136,11 +147,11 @@ router.put("/:id", (req, res) => {
       const database = JSON.parse(data);
 
       let theId;
-
+      // iterating through the array of objects to find the  post_id of blog.json /:id
       database.forEach((obj, i) => {
         if (obj.post_id === id) {
           let buildObj = {};
-
+          // looking at the key in the object eg .. {"thisIsTheKey": 2(value is integer)}
           for (key in obj) {
             if (updatedInfo[key]) {
               console.log("Checked");
@@ -154,10 +165,11 @@ router.put("/:id", (req, res) => {
           theId = buildObj;
         }
       });
-      // Error message for it that id isn't in the data base (db)
+      // Error message for if the id isn't in the data base (db)
+      // checking if length of theId(object)
       if (Object.keys(theId).length <= 0)
         res.status(404).json({ message: "No character in roster" });
-
+      // converting database to a JSON file/object
       fs.writeFile(fullPath, JSON.stringify(database), (err) =>
         console.log(err)
       );
@@ -168,6 +180,7 @@ router.put("/:id", (req, res) => {
       });
     });
   } catch (err) {
+    // error if try not accomplished
     res.status(500).json({
       error: err.message,
     });
