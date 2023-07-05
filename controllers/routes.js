@@ -34,17 +34,27 @@ router.get("/:id", (req, res) => {
   }
 });
 
-// // Creating the delete endpoint
-// router.delete("/delete", (req, res) => {
-//   try {
-//     const
+// Error Response Function
+const errorResponse = (res, error) => {
+  return res.status(500).json({
+    Error: error.message,
+  });
+};
 
-//   } catch (err) {
-//     res.status(500).json({
-//       error: err.message,
-//     });
-//   }
-// });
+//Creating the delete endpoint
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleteMessage = await db.deleteOne({
+      post_id: id,
+      body: req.post_id.
+
+    });
+  } catch (err) {
+    errorResponse(res, err);
+  }
+});
 
 // POST One - Create, http://localhost:4029/newpostId
 router.post("/newpostid", (req, res) => {
