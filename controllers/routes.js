@@ -1,8 +1,13 @@
 const router = require("express").Router();
+// linking blog.json to routes.js for internal affairs
 const fsPath = "../api/blog.json";
+// throwing the blog.json into a variable call db for internal usage
 const db = require(fsPath);
+// used for writing to json file
 const fs = require("fs");
 const path = require("path");
+// used to write to the database(json object "db") __dirname is keyword
+const fullPath = path.join(__dirname, fsPath);
 
 //  Endpoint that will display all comments from the database. In lieu of database, we use our blog.json file.
 // localhost:4029/ to get all
@@ -22,7 +27,7 @@ router.get("/", (req, res) => {
 router.get("/:id", (req, res) => {
   try {
     const id = req.params.id;
-
+    //find method to search for obj or the user input (req)
     let commentId = db.find((obj) => obj.post_id == id);
     res.status(200).json({
       commentId,
@@ -41,16 +46,29 @@ const errorResponse = (res, error) => {
   });
 };
 
-//Creating the delete endpoint
+//Creating the delete endpoint http://localhost:4029/:id
 
 router.delete("/:id", async (req, res) => {
   try {
-    const { id } = req.params;
-    const deleteMessage = await db.deleteOne({
-      post_id: id,
-      body: req.post_id.
+    const id = req.params.id;
 
+    // read from blog.json
+    const post = db.find((p) => p.post_id == id);
+    // if statement is true(id not found) error! If not run @this^_^
+    if (post === undefined) {
+      res.status(404).json({});
+      return;
+    }
+
+    // delete item containing the id ^_^
+    const updatedDB = db.filter((p) => p.post_id != id);
+
+    // write to blog.json
+    fs.writeFile(fullPath, JSON.stringify(updatedDB), (err) => {
+      console.log(err);
     });
+
+    res.status(200).json({});
   } catch (err) {
     errorResponse(res, err);
   }
@@ -106,7 +124,7 @@ router.post("/newpostid", (req, res) => {
   }
 });
 
-// Put One by ID - Update
+//  One by ID - Update
 router.put("/:id", (req, res) => {
   try {
     const id = Number(req.params.id);
